@@ -30,7 +30,7 @@ public class HttpConnector {
     private static String newLine = System.getProperty("line.separator");
 
     DefaultHttpClient httpclient;
-    
+
     protected void initialize() {
         SchemeRegistry schemeRegistry = new SchemeRegistry();
         schemeRegistry.register(
@@ -40,22 +40,22 @@ public class HttpConnector {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(
                 new AuthScope("api.constantcontact.com", ANY_PORT),
-        new UsernamePasswordCredentials(System.getProperty("apikey") + "%" + System.getProperty("user"), System.getProperty("password")));
+                new UsernamePasswordCredentials(System.getProperty("apikey") + "%" + System.getProperty("user"), System.getProperty("password")));
         httpclient.setCredentialsProvider(credsProvider);
     }
 
-    protected HttpResponse doReq (String uri) {
+    protected HttpResponse doReq(String uri) {
         HttpResponse response = null;
         HttpEntity entity = null;
         try {
             HttpRequestBase httpRequest = new HttpGet(uri);
-            if (LOG.isDebugEnabled()){
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("executing request to: " + httpRequest.getURI());
             }
 
             response = httpclient.execute(httpRequest);
             entity = response.getEntity();
-        } catch (Exception e){
+        } catch (Exception e) {
             LOG.error("Had a problem with executing requesting and grabbing response", e);
         } finally {
             StringBuilder responseBuilder = new StringBuilder();
@@ -75,7 +75,7 @@ public class HttpConnector {
                     } else {
                         BufferedReader in = new BufferedReader(new InputStreamReader(entity.getContent()));
                         String line;
-                        while((line = in.readLine()) != null) {
+                        while ((line = in.readLine()) != null) {
                             responseBuilder.append(line);
                             responseBuilder.append(newLine);
                         }
@@ -91,7 +91,7 @@ public class HttpConnector {
         }
         return response;
     }
-    
+
     protected void clientTeardown() {
         httpclient.getConnectionManager().shutdown();
     }
