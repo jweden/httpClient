@@ -58,34 +58,34 @@ public class HttpConnector {
         } catch (Exception e) {
             LOG.error("Had a problem with executing requesting and grabbing response", e);
         } finally {
-            StringBuilder responseBuilder = new StringBuilder();
-            Header[] headers = response.getAllHeaders();
-            for (Header header : headers) {
-                responseBuilder.append(header.getName());
-                responseBuilder.append(": ");
-                responseBuilder.append(header.getValue());
-                responseBuilder.append(newLine);
-            }
+            if (LOG.isDebugEnabled()) {
+                StringBuilder responseBuilder = new StringBuilder();
+                Header[] headers = response.getAllHeaders();
+                for (Header header : headers) {
+                    responseBuilder.append(header.getName());
+                    responseBuilder.append(": ");
+                    responseBuilder.append(header.getValue());
+                    responseBuilder.append(newLine);
+                }
 
-            try {
-                if (entity != null) {
-                    long len = entity.getContentLength();
-                    if (len != -1 && len < 2) {
-                        responseBuilder.append(EntityUtils.toString(entity));
-                    } else {
-                        BufferedReader in = new BufferedReader(new InputStreamReader(entity.getContent()));
-                        String line;
-                        while ((line = in.readLine()) != null) {
-                            responseBuilder.append(line);
-                            responseBuilder.append(newLine);
+                try {
+                    if (entity != null) {
+                        long len = entity.getContentLength();
+                        if (len != -1 && len < 2048) {
+                            responseBuilder.append(EntityUtils.toString(entity));
+                        } else {
+                            BufferedReader in = new BufferedReader(new InputStreamReader(entity.getContent()));
+                            String line;
+                            while ((line = in.readLine()) != null) {
+                                responseBuilder.append(line);
+                                responseBuilder.append(newLine);
+                            }
                         }
                     }
+                } catch (IOException ex) {
+                    LOG.error("Problem capturing output", ex);
                 }
-            } catch (IOException ex) {
-                LOG.error("Problem capturing output", ex);
-            }
 
-            if (LOG.isDebugEnabled()) {
                 LOG.debug("Response is: " + newLine + responseBuilder);
             }
         }

@@ -16,7 +16,7 @@ public class TestBase {
     }
 
 
-    @AfterClass(description = "tear down")
+    @AfterClass(description = "Gracefully shut down http connection")
     public void afterClassTearDown() throws Exception {
         httpConn.clientTeardown();
     }
