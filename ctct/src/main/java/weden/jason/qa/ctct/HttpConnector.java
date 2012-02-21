@@ -7,6 +7,7 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.Scheme;
@@ -40,15 +41,26 @@ public class HttpConnector {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(
                 new AuthScope("api.constantcontact.com", ANY_PORT),
-                new UsernamePasswordCredentials(System.getProperty("apikey") + "%" + System.getProperty("user"), System.getProperty("password")));
+                new UsernamePasswordCredentials(System.getProperty("apikey") + "%" + System.getProperty("user"),
+                                                System.getProperty("password")));
         httpclient.setCredentialsProvider(credsProvider);
     }
 
-    protected HttpResponse doReq(String uri) {
+    protected HttpResponse sendRequest(String uri, HTTPMethod httpMethod) {
         HttpResponse response = null;
         HttpEntity entity = null;
         try {
-            HttpRequestBase httpRequest = new HttpGet(uri);
+            HttpRequestBase httpRequest = null;
+            switch (httpMethod) {
+                case GET:
+                    httpRequest = new HttpGet(uri);
+                    break;
+
+                case POST:
+                    httpRequest = new HttpPost(uri);
+                    break;
+            }
+
             if (LOG.isDebugEnabled()) {
                 LOG.debug("executing request to: " + httpRequest.getURI());
             }

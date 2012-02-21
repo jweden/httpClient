@@ -12,7 +12,8 @@ public class EventsTester extends TestBase {
     @Test(description = "Looking for correct content-type when getting events", invocationCount = 5, threadPoolSize = 5, groups = "fast")
     public void GetEventsAndEnsureContentTypeTest() throws Exception {
         String user = System.getProperty("user");
-        HttpResponse resp = httpConn.doReq("https://api.constantcontact.com/ws/customers/" + user + "/events");
+        HttpResponse resp = httpConn.sendRequest("https://api.constantcontact.com/ws/customers/" + user + "/events",
+                HTTPMethod.GET);
         Assert.assertEquals(resp.getHeaders("Content-Type")[0].getValue(), "application/atom+xml",
                 "Looking for correct content-type when getting events");
     }
