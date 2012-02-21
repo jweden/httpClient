@@ -23,7 +23,7 @@
     </category>
 
     <root>
-        <priority value="INFO"/>
+        <priority value="DEBUG"/>
         <!-- appender-ref ref="filelog"/ -->
         <appender-ref ref="ConsoleAppender"/>
     </root>

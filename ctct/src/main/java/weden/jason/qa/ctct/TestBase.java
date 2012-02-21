@@ -10,14 +10,14 @@ public class TestBase {
     protected HttpConnector httpConn;
 
     @BeforeClass(description = "Setting up http connection object")
-    public void beforeClassSetup() throws Exception {
+    public void setup() throws Exception {
         httpConn = new HttpConnector();
         httpConn.initialize();
     }
 
 
     @AfterClass(description = "Gracefully shut down http connection")
-    public void afterClassTearDown() throws Exception {
+    public void tearDown() throws Exception {
         httpConn.clientTeardown();
     }
 

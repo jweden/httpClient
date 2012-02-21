@@ -1,6 +1,5 @@
 package weden.jason.qa.ctct;
 
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -42,66 +41,46 @@ public class HttpConnector {
         credsProvider.setCredentials(
                 new AuthScope("api.constantcontact.com", ANY_PORT),
                 new UsernamePasswordCredentials(System.getProperty("apikey") + "%" + System.getProperty("user"),
-                                                System.getProperty("password")));
+                        System.getProperty("password")));
         httpclient.setCredentialsProvider(credsProvider);
     }
 
-    protected HttpResponse sendRequest(String uri, HTTPMethod httpMethod) {
-        HttpResponse response = null;
-        HttpEntity entity = null;
-        try {
-            HttpRequestBase httpRequest = null;
-            switch (httpMethod) {
-                case GET:
-                    httpRequest = new HttpGet(uri);
-                    break;
+    protected HttpResponse sendRequest(String uri, HTTPMethod httpMethod) throws IOException {
+        HttpRequestBase httpRequest = null;
+        switch (httpMethod) {
+            case GET:
+                httpRequest = new HttpGet(uri);
+                break;
 
-                case POST:
-                    httpRequest = new HttpPost(uri);
-                    break;
-            }
+            case POST:
+                httpRequest = new HttpPost(uri);
+                break;
+        }
 
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("executing request to: " + httpRequest.getURI());
-            }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("executing request to: " + httpRequest.getURI());
+        }
 
-            response = httpclient.execute(httpRequest);
-            entity = response.getEntity();
-        } catch (Exception e) {
-            LOG.error("Had a problem with executing requesting and grabbing response", e);
-        } finally {
-            if (LOG.isDebugEnabled()) {
-                StringBuilder responseBuilder = new StringBuilder();
-                Header[] headers = response.getAllHeaders();
-                for (Header header : headers) {
-                    responseBuilder.append(header.getName());
-                    responseBuilder.append(": ");
-                    responseBuilder.append(header.getValue());
-                    responseBuilder.append(newLine);
+        return httpclient.execute(httpRequest);
+    }
+
+    protected String getBody(HttpResponse resp) throws IOException {
+        HttpEntity entity = resp.getEntity();
+        StringBuilder bodyBuilder = new StringBuilder();
+        if (entity != null) {
+            long len = entity.getContentLength();
+            if (len != -1 && len < 2048) {
+                bodyBuilder.append(EntityUtils.toString(entity));
+            } else {
+                BufferedReader in = new BufferedReader(new InputStreamReader(entity.getContent()));
+                String line;
+                while ((line = in.readLine()) != null) {
+                    bodyBuilder.append(line);
+                    bodyBuilder.append(newLine);
                 }
-
-                try {
-                    if (entity != null) {
-                        long len = entity.getContentLength();
-                        if (len != -1 && len < 2048) {
-                            responseBuilder.append(EntityUtils.toString(entity));
-                        } else {
-                            BufferedReader in = new BufferedReader(new InputStreamReader(entity.getContent()));
-                            String line;
-                            while ((line = in.readLine()) != null) {
-                                responseBuilder.append(line);
-                                responseBuilder.append(newLine);
-                            }
-                        }
-                    }
-                } catch (IOException ex) {
-                    LOG.error("Problem capturing output", ex);
-                }
-
-                LOG.debug("Response is: " + newLine + responseBuilder);
             }
         }
-        return response;
+        return bodyBuilder.toString();
     }
 
     protected void clientTeardown() {
