@@ -2,9 +2,6 @@ package weden.jason.qa.ctct;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -12,18 +9,15 @@ import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
-import static org.apache.http.auth.AuthScope.ANY_PORT;
+import javax.xml.bind.DatatypeConverter;
+import java.io.*;
 
 public class HttpConnector {
     private static final Logger LOG = LogManager.getLogger(HttpConnector.class);
@@ -37,15 +31,9 @@ public class HttpConnector {
                 new Scheme("https", 443, SSLSocketFactory.getSocketFactory()));
         ClientConnectionManager cm = new ThreadSafeClientConnManager(schemeRegistry);
         httpclient = new DefaultHttpClient(cm);
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(
-                new AuthScope("api.constantcontact.com", ANY_PORT),
-                new UsernamePasswordCredentials(System.getProperty("apikey") + "%" + System.getProperty("user"),
-                        System.getProperty("password")));
-        httpclient.setCredentialsProvider(credsProvider);
     }
 
-    protected HttpResponse sendRequest(String uri, HTTPMethod httpMethod) throws IOException {
+    protected HttpResponse sendRequest(String uri, HTTPMethod httpMethod, String... entityBody) throws IOException {
         HttpRequestBase httpRequest = null;
         switch (httpMethod) {
             case GET:
@@ -54,12 +42,26 @@ public class HttpConnector {
 
             case POST:
                 httpRequest = new HttpPost(uri);
+                if (entityBody.length > 0) {
+                    String body = entityBody[0];
+                    InputStream is = new ByteArrayInputStream(body.getBytes());
+                    InputStreamEntity ie = new InputStreamEntity(is, body.length());
+                    ((HttpPost) httpRequest).setEntity(ie);
+                }
                 break;
         }
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("executing request to: " + httpRequest.getURI());
         }
+
+        httpRequest.setHeader("Accept", "application/atom+xml");
+        httpRequest.setHeader("Content-Type", "application/atom+xml");
+
+        String userPassToUse = System.getProperty("apikey") + "%" + System.getProperty("user") + ":" +
+                System.getProperty("password");
+        String encoding = DatatypeConverter.printBase64Binary(userPassToUse.getBytes());
+        httpRequest.setHeader("Authorization", "Basic " + encoding);
 
         return httpclient.execute(httpRequest);
     }

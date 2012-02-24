@@ -57,6 +57,21 @@
                     <descriptorId>jar-with-dependencies</descriptorId>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.groovy.maven</groupId>
+                <artifactId>gmaven-plugin</artifactId>
+                <version>${gmaven-version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generateStubs</goal>
+                            <goal>compile</goal>
+                            <goal>generateTestStubs</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -69,6 +84,16 @@
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
             <version>${jsonSimple-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy.maven.runtime</groupId>
+            <artifactId>gmaven-runtime-1.6</artifactId>
+            <version>${gmaven-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy.maven</groupId>
+            <artifactId>gmaven-mojo</artifactId>
+            <version>${gmaven-version}</version>
         </dependency>
     </dependencies>
 </project>

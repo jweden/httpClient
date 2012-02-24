@@ -12,8 +12,18 @@ Commons HttpClient).
 
 The first test is a multi-threaded test that sends in the same request
 5 times and ensures a correct response (Content-Type header) to each of
-these requests.  The second test sends in a bad oauth2 login and parses
-the json response for correct error messages.
+these requests.
+
+The second test sends in a bad oauth2 login and parses
+the json response (using the json-simple library) for correct error messages.
+
+The third test uses built-in data-driven TestNG functionality with the help of
+groovy to create an event.  The idea here is that one could put multiple test cases
+in the groovy testCases.properties file.  201 created response is verified.
+
+The fourth test concurrently creates events.  The TestNG annotation can be easily changed
+to a higher number from the current 5.  (I've successfully created 500 concurrent events).
+201 created response is verified for each response.
 
 This was tested with the following environment:
 
