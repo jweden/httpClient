@@ -1,5 +1,8 @@
 package weden.jason.qa.ctct;
 
+import akka.actor.TypedActor;
+import akka.dispatch.Future;
+import akka.dispatch.Futures;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -19,21 +22,23 @@ import org.apache.log4j.Logger;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 
-public class HttpConnector {
+public class HttpConnector implements IHttpConnector {
     private static final Logger LOG = LogManager.getLogger(HttpConnector.class);
     private static String newLine = System.getProperty("line.separator");
 
     DefaultHttpClient httpclient;
 
-    protected void initialize() {
+    public void initialize() {
         SchemeRegistry schemeRegistry = new SchemeRegistry();
         schemeRegistry.register(
                 new Scheme("https", 443, SSLSocketFactory.getSocketFactory()));
-        ClientConnectionManager cm = new ThreadSafeClientConnManager(schemeRegistry);
+        ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(schemeRegistry);
+        cm.setMaxTotal(200);
+        cm.setDefaultMaxPerRoute(200);
         httpclient = new DefaultHttpClient(cm);
     }
 
-    protected HttpResponse sendRequest(String uri, HTTPMethod httpMethod, String... entityBody) throws IOException {
+    public HttpResponse sendRequest(String uri, HTTPMethod httpMethod, String... entityBody) throws IOException {
         HttpRequestBase httpRequest = null;
         switch (httpMethod) {
             case GET:
@@ -66,6 +71,10 @@ public class HttpConnector {
         return httpclient.execute(httpRequest);
     }
 
+    public Future<HttpResponse> sendRequestFuture(String uri, HTTPMethod httpMethod, String... entityBody) throws IOException {
+        return Futures.successful(sendRequest(uri, httpMethod, entityBody), TypedActor.dispatcher());
+    }
+
     protected String getBody(HttpResponse resp) throws IOException {
         HttpEntity entity = resp.getEntity();
         StringBuilder bodyBuilder = new StringBuilder();
@@ -85,7 +94,7 @@ public class HttpConnector {
         return bodyBuilder.toString();
     }
 
-    protected void clientTeardown() {
+    public void clientTeardown() {
         httpclient.getConnectionManager().shutdown();
     }
 }

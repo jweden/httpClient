@@ -11,7 +11,7 @@
     </appender>
 
     <appender name="filelog" class="org.apache.log4j.DailyRollingFileAppender">
-        <param name="File" value="testLog.log"/>
+        <param name="File" value="C:/testLog.log"/>
         <param name="DatePattern" value="'.'yyyy-MM-dd"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d %-5p [%t] %c{2} - %m%n"/>
@@ -24,7 +24,7 @@
 
     <root>
         <priority value="TRACE"/>
-        <!-- appender-ref ref="filelog"/ -->
+        <appender-ref ref="filelog"/>
         <appender-ref ref="ConsoleAppender"/>
     </root>
 
